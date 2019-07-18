@@ -1,2 +1,5 @@
-# path-extractor
-Parse html document and extract paths from the images, anchors and other tags.
+# Path extractor
+
+Package, which parses html string and extract paths from the images, anchors and other tags.
+
+Documentation to follow.
