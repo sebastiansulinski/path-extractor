@@ -13,17 +13,25 @@ class Extractor
     /**
      * @var \DOMDocument
      */
-    protected $dom;
+    private $dom;
+
+    /**
+     * @var string|null
+     */
+    private $url;
 
     /**
      * Extract constructor.
      *
      * @param  string $string
+     * @param  string|null $url
      */
-    public function __construct(string $string)
+    public function __construct(string $string, string $url = null)
     {
         $this->dom = new DOMDocument;
-        @$this->dom->loadHTML($string);
+        $this->dom->loadHTML($string);
+
+        $this->url = $url;
     }
 
     /**
@@ -44,7 +52,7 @@ class Extractor
 
         foreach ($tags as $tag) {
             $all[] = new Image([
-                'src' => $tag->getAttribute('src'),
+                'src' => $this->path($tag->getAttribute('src')),
                 'alt' => $tag->getAttribute('alt'),
             ]);
         }
@@ -69,7 +77,7 @@ class Extractor
 
         foreach ($tags as $tag) {
             $all[] = new Script([
-                'src' => $tag->getAttribute('src'),
+                'src' => $this->path($tag->getAttribute('src')),
                 'async' => $tag->hasAttribute('async'),
                 'defer' => $tag->hasAttribute('defer'),
             ]);
@@ -96,7 +104,7 @@ class Extractor
 
         foreach ($tags as $tag) {
             $all[] = new Anchor([
-                'href' => $tag->getAttribute('href'),
+                'href' => $this->path($tag->getAttribute('href')),
                 'target' => $tag->getAttribute('target'),
                 'title' => $tag->getAttribute('title'),
                 'nodeValue' => $tag->nodeValue,
@@ -104,6 +112,25 @@ class Extractor
         }
 
         return $this->filter($all, 'href', $extensions);
+    }
+
+    /**
+     * Prepend url if not already present in the path.
+     *
+     * @param  string $path
+     * @return string
+     */
+    private function path(string $path): string
+    {
+        if (is_null($this->url)) {
+            return $path;
+        }
+
+        if (!is_null(parse_url($path, PHP_URL_HOST))) {
+            return $path;
+        }
+
+        return rtrim($this->url, '/').'/'.ltrim($path, '/');
     }
 
     /**

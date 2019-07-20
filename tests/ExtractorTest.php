@@ -198,4 +198,53 @@ class ExtractorTest extends TestCase
             (string)(new Extractor($string))->a()[0]
         );
     }
+
+    /**
+     * @test
+     */
+    public function prepends_url_if_not_present()
+    {
+        $string = '<img src="/media/image/one.jpg" alt="Image one">';
+        $string .= '<img src="https://mysite.com/media/image/two.jpg" alt="Image two">';
+        $string .= '<a href="/media/files/two.pdf" '.
+            'target="_blank" title="Document">Document</a>';
+        $string .= '<script src="/media/script/three.js" async></script>';
+
+        $this->assertEquals(
+            [
+                new Image([
+                    'src' => 'https://demo.com/media/image/one.jpg',
+                    'alt' => 'Image one',
+                ]),
+                new Image([
+                    'src' => 'https://mysite.com/media/image/two.jpg',
+                    'alt' => 'Image two',
+                ]),
+            ],
+            (new Extractor($string, 'https://demo.com'))->img()
+        );
+
+        $this->assertEquals(
+            [
+                new Anchor([
+                    'href' => 'https://demo.com/media/files/two.pdf',
+                    'target' => '_blank',
+                    'title' => 'Document',
+                    'nodeValue' => 'Document',
+                ]),
+            ],
+            (new Extractor($string, 'https://demo.com/'))->a()
+        );
+
+        $this->assertEquals(
+            [
+                new Script([
+                    'src' => 'https://demo.com/media/script/three.js',
+                    'async' => true,
+                    'defer' => false,
+                ]),
+            ],
+            (new Extractor($string, 'https://demo.com'))->script()
+        );
+    }
 }
