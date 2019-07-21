@@ -16,6 +16,9 @@ You can instantiate `Extractor` either by using `new` keyword or static `make` m
 Constructor takes and optional argument, which represents the string to be parsed.
 
 ```php
+use SSD\PathExtractor\Extractor;
+
+
 $extractor = new Extractor;
 
 $extractor = new Extractor($html);
