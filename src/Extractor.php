@@ -2,6 +2,8 @@
 
 namespace SSD\PathExtractor;
 
+use tidy;
+use Exception;
 use DOMDocument;
 use SSD\PathExtractor\Tags\Tag;
 use SSD\PathExtractor\Tags\Image;
@@ -24,70 +26,46 @@ class Extractor
      * Extract constructor.
      *
      * @param  string $string
+     * @param  bool $validate
      * @param  string|null $url
+     * @throws \SSD\PathExtractor\InvalidHtmlException
      */
-    public function __construct(string $string, string $url = null)
+    public function __construct(string $string, bool $validate = false, string $url = null)
     {
-        $this->dom = new DOMDocument;
-        $this->dom->loadHTML($string);
+        try {
 
-        $this->url = $url;
+            $this->dom = new DOMDocument;
+            $this->dom->loadHTML($this->purify($string, $validate));
+
+            $this->url = $url;
+
+        } catch (Exception $exception) {
+            throw new InvalidHtmlException($exception->getMessage());
+        }
     }
 
     /**
-     * Extract all images.
+     * Purify string.
      *
-     * @param  array|null $extensions
-     * @return array
+     * @param  string $string
+     * @param  bool $validate
+     * @return string
      */
-    public function img(array $extensions = null): array
+    private function purify(string $string, bool $validate = false): string
     {
-        $tags = $this->dom->getElementsByTagName('img');
-
-        if (empty($tags)) {
-            return [];
+        if ($validate) {
+            return $string;
         }
 
-        $all = [];
-
-        foreach ($tags as $tag) {
-            $all[] = new Image([
-                'src' => $this->path($tag->getAttribute('src')),
-                'alt' => $tag->getAttribute('alt'),
-            ]);
-        }
-
-        return $this->filter($all, 'src', $extensions);
+        return (new tidy)->repairString($string, [
+            'clean' => 'yes',
+            'output-html' => 'yes',
+            'wrap' => 0,
+        ], 'utf8');
     }
 
     /**
-     * Extract all scripts.
-     *
-     * @return array
-     */
-    public function script(): array
-    {
-        $tags = $this->dom->getElementsByTagName('script');
-
-        if (empty($tags)) {
-            return [];
-        }
-
-        $all = [];
-
-        foreach ($tags as $tag) {
-            $all[] = new Script([
-                'src' => $this->path($tag->getAttribute('src')),
-                'async' => $tag->hasAttribute('async'),
-                'defer' => $tag->hasAttribute('defer'),
-            ]);
-        }
-
-        return $all;
-    }
-
-    /**
-     * Extract all documents.
+     * Extract anchors.
      *
      * @param  array $extensions
      * @return array
@@ -105,13 +83,65 @@ class Extractor
         foreach ($tags as $tag) {
             $all[] = new Anchor([
                 'href' => $this->path($tag->getAttribute('href')),
-                'target' => $tag->getAttribute('target'),
-                'title' => $tag->getAttribute('title'),
+                'target' => $this->attribute($tag->getAttribute('target')),
+                'title' => $this->attribute($tag->getAttribute('title')),
                 'nodeValue' => $tag->nodeValue,
             ]);
         }
 
         return $this->filter($all, 'href', $extensions);
+    }
+
+    /**
+     * Extract images.
+     *
+     * @param  array|null $extensions
+     * @return array
+     */
+    public function img(array $extensions = null): array
+    {
+        $tags = $this->dom->getElementsByTagName('img');
+
+        if (empty($tags)) {
+            return [];
+        }
+
+        $all = [];
+
+        foreach ($tags as $tag) {
+            $all[] = new Image([
+                'src' => $this->path($tag->getAttribute('src')),
+                'alt' => $this->attribute($tag->getAttribute('alt')),
+            ]);
+        }
+
+        return $this->filter($all, 'src', $extensions);
+    }
+
+    /**
+     * Extract scripts.
+     *
+     * @return array
+     */
+    public function script(): array
+    {
+        $tags = $this->dom->getElementsByTagName('script');
+
+        if (empty($tags)) {
+            return [];
+        }
+
+        $all = [];
+
+        foreach ($tags as $tag) {
+            $all[] = new Script([
+                'src' => $this->path($tag->getAttribute('src')),
+                'async' => $this->attribute($tag->hasAttribute('async')),
+                'defer' => $this->attribute($tag->hasAttribute('defer')),
+            ]);
+        }
+
+        return $all;
     }
 
     /**
@@ -131,6 +161,17 @@ class Extractor
         }
 
         return rtrim($this->url, '/').'/'.ltrim($path, '/');
+    }
+
+    /**
+     * Get attribute.
+     *
+     * @param  string $value
+     * @return string|null
+     */
+    private function attribute(string $value): ?string
+    {
+        return $value === '' ? null : $value;
     }
 
     /**

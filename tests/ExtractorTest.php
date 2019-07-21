@@ -7,6 +7,7 @@ use SSD\PathExtractor\Extractor;
 use SSD\PathExtractor\Tags\Image;
 use SSD\PathExtractor\Tags\Anchor;
 use SSD\PathExtractor\Tags\Script;
+use SSD\PathExtractor\InvalidHtmlException;
 
 class ExtractorTest extends TestCase
 {
@@ -19,6 +20,8 @@ class ExtractorTest extends TestCase
         $string .= '<p>Some</p>';
         $string .= '<img src="/media/image/two.jpeg" alt="Image two">';
         $string .= '<img src="/media/image/three.svg" alt="Image three">';
+
+        $extractor = new Extractor($string);
 
         $this->assertEquals(
             [
@@ -35,7 +38,7 @@ class ExtractorTest extends TestCase
                     'alt' => 'Image three',
                 ]),
             ],
-            (new Extractor($string))->img()
+            $extractor->img()
         );
 
         $this->assertEquals(
@@ -45,7 +48,7 @@ class ExtractorTest extends TestCase
                     'alt' => 'Image three',
                 ]),
             ],
-            (new Extractor($string))->img(['svg'])
+            $extractor->img(['svg'])
         );
     }
 
@@ -124,6 +127,8 @@ class ExtractorTest extends TestCase
         $string .= '<a href="/media/files/three.pdf">Document three</a>';
         $string .= '<a href="/four">Page link</a>';
 
+        $extractor = new Extractor($string);
+
         $this->assertEquals(
             [
                 new Anchor([
@@ -151,7 +156,7 @@ class ExtractorTest extends TestCase
                     'nodeValue' => 'Page link',
                 ]),
             ],
-            (new Extractor($string))->a()
+            $extractor->a()
         );
 
         $this->assertEquals(
@@ -169,7 +174,7 @@ class ExtractorTest extends TestCase
                     'nodeValue' => 'Document three',
                 ]),
             ],
-            (new Extractor($string))->a(['pdf'])
+            $extractor->a(['pdf'])
         );
 
         $this->assertEquals(
@@ -181,7 +186,7 @@ class ExtractorTest extends TestCase
                     'nodeValue' => 'Word document',
                 ]),
             ],
-            (new Extractor($string))->a(['docx'])
+            $extractor->a(['docx'])
         );
     }
 
@@ -210,6 +215,8 @@ class ExtractorTest extends TestCase
             'target="_blank" title="Document">Document</a>';
         $string .= '<script src="/media/script/three.js" async></script>';
 
+        $extractor = new Extractor($string, false, 'https://demo.com');
+
         $this->assertEquals(
             [
                 new Image([
@@ -221,7 +228,7 @@ class ExtractorTest extends TestCase
                     'alt' => 'Image two',
                 ]),
             ],
-            (new Extractor($string, 'https://demo.com'))->img()
+            $extractor->img()
         );
 
         $this->assertEquals(
@@ -233,7 +240,7 @@ class ExtractorTest extends TestCase
                     'nodeValue' => 'Document',
                 ]),
             ],
-            (new Extractor($string, 'https://demo.com/'))->a()
+            $extractor->a()
         );
 
         $this->assertEquals(
@@ -244,7 +251,41 @@ class ExtractorTest extends TestCase
                     'defer' => false,
                 ]),
             ],
-            (new Extractor($string, 'https://demo.com'))->script()
+            $extractor->script()
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function throws_exception_with_invalid_input_and_validation_set_to_true()
+    {
+        $string = '<body<img src="/media/image/one.jpg" alt="Image one">';
+        $string .= '<img src="https://mysite.com/media/image/two.jpg" alt="Image two">';
+
+        $this->expectException(InvalidHtmlException::class);
+
+        $extractor = new Extractor($string, true);
+    }
+
+    /**
+     * @test
+     */
+    public function does_not_throw_exception_with_invalid_input_and_validation_set_to_false()
+    {
+        $string = '<body<img src="/media/image/one.jpg" alt="Image one">';
+        $string .= '<img src="https://mysite.com/media/image/two.jpg" alt="Image two">';
+
+        $extractor = new Extractor($string, false);
+
+        $this->assertEquals(
+            [
+                new Image([
+                    'src' => 'https://mysite.com/media/image/two.jpg',
+                    'alt' => 'Image two',
+                ]),
+            ],
+            $extractor->img()
         );
     }
 }

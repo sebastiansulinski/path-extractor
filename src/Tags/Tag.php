@@ -78,8 +78,7 @@ abstract class Tag
         $attributes = is_array($attributes) ? $attributes : func_get_args();
 
         $attributes = array_filter($attributes, function (string $field) {
-            return !empty($this->attributes[$field]) &&
-                !is_numeric($this->attributes[$field]);
+            return !empty($this->attributes[$field]);
         });
 
         $attributes = implode(' ', array_map(function ($field) {
