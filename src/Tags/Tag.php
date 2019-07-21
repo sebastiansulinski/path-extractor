@@ -21,6 +21,13 @@ abstract class Tag
     const TYPE_BOOLEAN = 'bool';
 
     /**
+     * Property type.
+     *
+     * @var string
+     */
+    const TYPE_PROPERTY = 'property';
+
+    /**
      * @var array
      */
     private $attributes = [];
@@ -32,33 +39,29 @@ abstract class Tag
      */
     public function __construct(array $attributes)
     {
-        $this->setAttributes($attributes);
+        $this->attributes = $attributes;
     }
 
     /**
-     * Set attributes.
+     * Get tag name.
      *
-     * @param  array $attributes
-     * @return void
+     * @return string
      */
-    private function setAttributes(array $attributes): void
-    {
-        $this->attributes = $this->availableAttributes();
+    abstract static public function tagName(): string;
 
-        array_walk(
-            $this->attributes,
-            function (string &$type, string $field) use ($attributes) {
-                $type = $attributes[$field] ?? null;
-            }
-        );
-    }
+    /**
+     * Get path attribute.
+     *
+     * @return string
+     */
+    abstract static public function pathAttribute(): string;
 
     /**
      * Get available attributes.
      *
      * @return array
      */
-    abstract protected function availableAttributes(): array;
+    abstract static public function availableAttributes(): array;
 
     /**
      * Get formatted tag.
@@ -66,6 +69,16 @@ abstract class Tag
      * @return string
      */
     abstract public function tag(): string;
+
+    /**
+     * Get path.
+     *
+     * @return string
+     */
+    public function path(): string
+    {
+        return $this->{static::pathAttribute()};
+    }
 
     /**
      * Get tag attributes.
@@ -130,5 +143,15 @@ abstract class Tag
     public function __toString(): string
     {
         return $this->tag();
+    }
+
+    /**
+     * Get array representation of the object instance.
+     *
+     * @return array
+     */
+    public function toArray(): array
+    {
+        return $this->attributes;
     }
 }

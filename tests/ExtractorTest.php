@@ -3,6 +3,7 @@
 namespace SSDTest;
 
 use PHPUnit\Framework\TestCase;
+use SSD\PathExtractor\Tags\Tag;
 use SSD\PathExtractor\Extractor;
 use SSD\PathExtractor\Tags\Image;
 use SSD\PathExtractor\Tags\Anchor;
@@ -18,27 +19,33 @@ class ExtractorTest extends TestCase
     {
         $string = '<img src="/media/image/one.jpg" alt="Image one">';
         $string .= '<p>Some</p>';
-        $string .= '<img src="/media/image/two.jpeg" alt="Image two">';
+        $string .= '<img src="/media/image/two.jpeg" alt="Image two" width="100%">';
         $string .= '<img src="/media/image/three.svg" alt="Image three">';
 
         $extractor = new Extractor($string);
-
+        $extractor->extract(Image::class);
         $this->assertEquals(
             [
                 new Image([
                     'src' => '/media/image/one.jpg',
                     'alt' => 'Image one',
+                    'width' => null,
+                    'height' => null
                 ]),
                 new Image([
                     'src' => '/media/image/two.jpeg',
                     'alt' => 'Image two',
+                    'width' => '100%',
+                    'height' => null
                 ]),
                 new Image([
                     'src' => '/media/image/three.svg',
                     'alt' => 'Image three',
+                    'width' => null,
+                    'height' => null
                 ]),
             ],
-            $extractor->img()
+            $extractor->extract(Image::class)
         );
 
         $this->assertEquals(
@@ -46,9 +53,11 @@ class ExtractorTest extends TestCase
                 new Image([
                     'src' => '/media/image/three.svg',
                     'alt' => 'Image three',
+                    'width' => null,
+                    'height' => null
                 ]),
             ],
-            $extractor->img(['svg'])
+            $extractor->withExtensions('svg')->extract(Image::class)
         );
     }
 
@@ -64,7 +73,7 @@ class ExtractorTest extends TestCase
 
         $this->assertEquals(
             '<img src="/media/image/three.svg" alt="Image three" />',
-            (string)(new Extractor($string))->img(['svg'])[0]
+            (string)Extractor::make($string)->withExtensions('svg')->extract(Image::class)[0]
         );
     }
 
@@ -75,7 +84,7 @@ class ExtractorTest extends TestCase
     {
         $string = '<script src="/media/script/one.js"></script>';
         $string .= '<p>Some</p>';
-        $string .= '<script src="/media/script/two.js" async defer></script>';
+        $string .= '<script src="/media/script/two.js" type="text/javascript" async defer></script>';
         $string .= '<script src="/media/script/three.js" async></script>';
 
         $this->assertEquals(
@@ -84,19 +93,25 @@ class ExtractorTest extends TestCase
                     'src' => '/media/script/one.js',
                     'async' => false,
                     'defer' => false,
+                    'type' => null,
+                    'charset' => null
                 ]),
                 new Script([
                     'src' => '/media/script/two.js',
                     'async' => true,
                     'defer' => true,
+                    'type' => 'text/javascript',
+                    'charset' => null
                 ]),
                 new Script([
                     'src' => '/media/script/three.js',
                     'async' => true,
                     'defer' => false,
+                    'type' => null,
+                    'charset' => null
                 ]),
             ],
-            (new Extractor($string))->script()
+            Extractor::make($string)->extract(Script::class)
         );
     }
 
@@ -112,7 +127,7 @@ class ExtractorTest extends TestCase
 
         $this->assertEquals(
             '<script src="/media/script/two.js" async defer></script>',
-            (string)(new Extractor($string))->script()[1]
+            (string)Extractor::make($string)->extract(Script::class)[1]
         );
     }
 
@@ -123,7 +138,7 @@ class ExtractorTest extends TestCase
     {
         $string = '<a href="/media/files/one.pdf" target="_blank">Document one</a>';
         $string .= '<p>Some</p>';
-        $string .= '<a href="/media/files/two.docx" title="Word document">Word document</a>';
+        $string .= '<a href="/media/files/two.docx" title="Word document" rel="nofollow">Word document</a>';
         $string .= '<a href="/media/files/three.pdf">Document three</a>';
         $string .= '<a href="/four">Page link</a>';
 
@@ -135,28 +150,32 @@ class ExtractorTest extends TestCase
                     'href' => '/media/files/one.pdf',
                     'target' => '_blank',
                     'title' => null,
+                    'rel' => null,
                     'nodeValue' => 'Document one',
                 ]),
                 new Anchor([
                     'href' => '/media/files/two.docx',
                     'target' => null,
                     'title' => 'Word document',
+                    'rel' => 'nofollow',
                     'nodeValue' => 'Word document',
                 ]),
                 new Anchor([
                     'href' => '/media/files/three.pdf',
                     'target' => null,
                     'title' => null,
+                    'rel' => null,
                     'nodeValue' => 'Document three',
                 ]),
                 new Anchor([
                     'href' => '/four',
                     'target' => null,
                     'title' => null,
+                    'rel' => null,
                     'nodeValue' => 'Page link',
                 ]),
             ],
-            $extractor->a()
+            $extractor->extract(Anchor::class)
         );
 
         $this->assertEquals(
@@ -165,16 +184,18 @@ class ExtractorTest extends TestCase
                     'href' => '/media/files/one.pdf',
                     'target' => '_blank',
                     'title' => null,
+                    'rel' => null,
                     'nodeValue' => 'Document one',
                 ]),
                 new Anchor([
                     'href' => '/media/files/three.pdf',
                     'target' => null,
                     'title' => null,
+                    'rel' => null,
                     'nodeValue' => 'Document three',
                 ]),
             ],
-            $extractor->a(['pdf'])
+            $extractor->withExtensions('pdf')->extract(Anchor::class)
         );
 
         $this->assertEquals(
@@ -183,10 +204,11 @@ class ExtractorTest extends TestCase
                     'href' => '/media/files/two.docx',
                     'target' => null,
                     'title' => 'Word document',
+                    'rel' => 'nofollow',
                     'nodeValue' => 'Word document',
                 ]),
             ],
-            $extractor->a(['docx'])
+            $extractor->withExtensions('docx')->extract(Anchor::class)
         );
     }
 
@@ -200,7 +222,7 @@ class ExtractorTest extends TestCase
 
         $this->assertEquals(
             $string,
-            (string)(new Extractor($string))->a()[0]
+            (string)Extractor::make($string)->extract(Anchor::class)[0]
         );
     }
 
@@ -215,20 +237,24 @@ class ExtractorTest extends TestCase
             'target="_blank" title="Document">Document</a>';
         $string .= '<script src="/media/script/three.js" async></script>';
 
-        $extractor = new Extractor($string, false, 'https://demo.com');
+        $extractor = Extractor::make($string)->withTidy()->withUrl('https://demo.com');
 
         $this->assertEquals(
             [
                 new Image([
                     'src' => 'https://demo.com/media/image/one.jpg',
                     'alt' => 'Image one',
+                    'width' => null,
+                    'height' => null
                 ]),
                 new Image([
                     'src' => 'https://mysite.com/media/image/two.jpg',
                     'alt' => 'Image two',
+                    'width' => null,
+                    'height' => null
                 ]),
             ],
-            $extractor->img()
+            $extractor->extract(Image::class)
         );
 
         $this->assertEquals(
@@ -237,10 +263,11 @@ class ExtractorTest extends TestCase
                     'href' => 'https://demo.com/media/files/two.pdf',
                     'target' => '_blank',
                     'title' => 'Document',
+                    'rel' => null,
                     'nodeValue' => 'Document',
                 ]),
             ],
-            $extractor->a()
+            $extractor->extract(Anchor::class)
         );
 
         $this->assertEquals(
@@ -249,43 +276,232 @@ class ExtractorTest extends TestCase
                     'src' => 'https://demo.com/media/script/three.js',
                     'async' => true,
                     'defer' => false,
+                    'type' => null,
+                    'charset' => null
                 ]),
             ],
-            $extractor->script()
+            $extractor->extract(Script::class)
         );
     }
 
     /**
      * @test
      */
-    public function throws_exception_with_invalid_input_and_validation_set_to_true()
+    public function throws_exception_with_invalid_input_and_purify_set_to_false()
     {
         $string = '<body<img src="/media/image/one.jpg" alt="Image one">';
         $string .= '<img src="https://mysite.com/media/image/two.jpg" alt="Image two">';
 
         $this->expectException(InvalidHtmlException::class);
 
-        $extractor = new Extractor($string, true);
+        Extractor::make($string)->extract(Image::class);
     }
 
     /**
      * @test
      */
-    public function does_not_throw_exception_with_invalid_input_and_validation_set_to_false()
+    public function does_not_throw_exception_with_invalid_input_and_purify_set_to_true_but_omits_tags_nearby_unclosed_tags()
     {
         $string = '<body<img src="/media/image/one.jpg" alt="Image one">';
         $string .= '<img src="https://mysite.com/media/image/two.jpg" alt="Image two">';
-
-        $extractor = new Extractor($string, false);
 
         $this->assertEquals(
             [
                 new Image([
                     'src' => 'https://mysite.com/media/image/two.jpg',
                     'alt' => 'Image two',
+                    'width' => null,
+                    'height' => null
                 ]),
             ],
-            $extractor->img()
+            Extractor::make($string)->withTidy()->extract(Image::class)
         );
+    }
+
+    /**
+     * @test
+     */
+    public function does_not_throw_exception_with_invalid_input_and_purify_set_to_true_and_does_not_omit_tags_nearby_closed_tags()
+    {
+        $string = '<body><img src="/media/image/one.jpg" alt="Image one">';
+        $string .= '<p><img src="https://mysite.com/media/image/two.jpg" alt="Image two">';
+
+        $this->assertEquals(
+            [
+                new Image([
+                    'src' => '/media/image/one.jpg',
+                    'alt' => 'Image one',
+                    'width' => null,
+                    'height' => null
+                ]),
+                new Image([
+                    'src' => 'https://mysite.com/media/image/two.jpg',
+                    'alt' => 'Image two',
+                    'width' => null,
+                    'height' => null
+                ]),
+            ],
+            Extractor::make($string)->withTidy()->extract(Image::class)
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function returns_empty_array_with_empty_body()
+    {
+        $this->assertEquals(
+            [],
+            Extractor::make()->extract(Image::class)
+        );
+
+        $this->assertEquals(
+            [],
+            Extractor::make()->for('')->extract(Image::class)
+        );
+
+        $this->assertEquals(
+            [],
+            Extractor::make()->withTidy()->extract(Image::class)
+        );
+
+        $this->assertEquals(
+            [],
+            Extractor::make()->for('')->withTidy()->extract(Image::class)
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function removes_records_with_empty_paths()
+    {
+        $string = '<img src="" alt="Image one">';
+        $string .= '<p>Some</p>';
+        $string .= '<img src="/media/image/two.jpeg" alt="Image two">';
+        $string .= '<img src="" alt="Image three">';
+
+        $extractor = new Extractor($string);
+        $extractor->extract(Image::class);
+        $this->assertEquals(
+            [
+                new Image([
+                    'src' => '/media/image/two.jpeg',
+                    'alt' => 'Image two',
+                    'width' => null,
+                    'height' => null
+                ]),
+            ],
+            $extractor->extract(Image::class)
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function returns_array_representation_of_the_tag()
+    {
+        $string = '<img src="/media/image/one.jpg" alt="Image one">';
+        $string .= '<img src="https://mysite.com/media/image/two.jpg" alt="Image two">';
+        $string .= '<a href="/media/files/two.pdf" '.
+            'target="_blank" title="Document">Document</a>';
+        $string .= '<script src="/media/script/three.js" async></script>';
+
+        $extractor = Extractor::make($string);
+
+
+        $images = array_map(function (Tag $tag) {
+            return $tag->toArray();
+        }, $extractor->extract(Image::class));
+
+        $this->assertEquals(
+            [
+                [
+                    'src' => '/media/image/one.jpg',
+                    'alt' => 'Image one',
+                    'width' => null,
+                    'height' => null
+                ],
+                [
+                    'src' => 'https://mysite.com/media/image/two.jpg',
+                    'alt' => 'Image two',
+                    'width' => null,
+                    'height' => null
+                ],
+            ],
+            $images
+        );
+
+
+        $anchors = array_map(function (Tag $tag) {
+            return $tag->toArray();
+        }, $extractor->extract(Anchor::class));
+
+        $this->assertEquals(
+            [
+                [
+                    'href' => '/media/files/two.pdf',
+                    'target' => '_blank',
+                    'title' => 'Document',
+                    'rel' => null,
+                    'nodeValue' => 'Document',
+                ],
+            ],
+            $anchors
+        );
+
+
+        $scripts = array_map(function (Tag $tag) {
+            return $tag->toArray();
+        }, $extractor->extract(Script::class));
+
+        $this->assertEquals(
+            [
+                [
+                    'src' => '/media/script/three.js',
+                    'async' => true,
+                    'defer' => false,
+                    'type' => null,
+                    'charset' => null
+                ],
+            ],
+            $scripts
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function extracting_paths_only()
+    {
+        $string = '<img src="/media/image/one.jpg" alt="Image one">';
+        $string .= '<img src="https://mysite.com/media/image/two.jpg" alt="Image two">';
+        $string .= '<a href="/media/files/two.pdf" '.
+            'target="_blank" title="Document">Document</a>';
+        $string .= '<script src="/media/script/three.js" async></script>';
+
+        $extractor = Extractor::make($string);
+
+
+        $images = array_map(function (Tag $tag) {
+            return $tag->path();
+        }, $extractor->extract(Image::class));
+
+        $anchors = array_map(function (Tag $tag) {
+            return $tag->path();
+        }, $extractor->extract(Anchor::class));
+
+
+        $scripts = array_map(function (Tag $tag) {
+            return $tag->path();
+        }, $extractor->extract(Script::class));
+
+
+        $this->assertEquals([
+            '/media/image/one.jpg',
+            'https://mysite.com/media/image/two.jpg',
+            '/media/files/two.pdf',
+            '/media/script/three.js',
+        ], array_merge($images, $anchors, $scripts));
     }
 }

@@ -3,17 +3,15 @@
 namespace SSD\PathExtractor\Tags;
 
 /**
- * Class Script
+ * Class Link
  *
  * @package SSD\PathExtractor\Tags
  *
- * @property string $src
+ * @property string $href
  * @property string $type
- * @property string $charset
- * @property bool $async
- * @property bool $defer
+ * @property string $rel
  */
-class Script extends Tag
+class Link extends Tag
 {
     /**
      * Get tag name.
@@ -22,7 +20,7 @@ class Script extends Tag
      */
     static public function tagName(): string
     {
-        return 'script';
+        return 'link';
     }
 
     /**
@@ -32,7 +30,7 @@ class Script extends Tag
      */
     static public function pathAttribute(): string
     {
-        return 'src';
+        return 'href';
     }
 
     /**
@@ -43,11 +41,9 @@ class Script extends Tag
     static public function availableAttributes(): array
     {
         return [
-            'src' => static::TYPE_STRING,
+            'href' => static::TYPE_STRING,
             'type' => static::TYPE_STRING,
-            'charset' => static::TYPE_STRING,
-            'async' => static::TYPE_BOOLEAN,
-            'defer' => static::TYPE_BOOLEAN,
+            'rel' => static::TYPE_STRING,
         ];
     }
 
@@ -58,6 +54,6 @@ class Script extends Tag
      */
     public function tag(): string
     {
-        return '<script'.$this->tagAttributes('src', 'type', 'charset', 'async', 'defer').'></script>';
+        return '<link'.$this->tagAttributes('href', 'type', 'rel').'></link>';
     }
 }
