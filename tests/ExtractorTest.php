@@ -4,6 +4,7 @@ namespace SSDTest;
 
 use PHPUnit\Framework\TestCase;
 use SSD\PathExtractor\Tags\Tag;
+use SSD\PathExtractor\Tags\Link;
 use SSD\PathExtractor\Extractor;
 use SSD\PathExtractor\Tags\Image;
 use SSD\PathExtractor\Tags\Anchor;
@@ -479,6 +480,7 @@ class ExtractorTest extends TestCase
         $string .= '<a href="/media/files/two.pdf" '.
             'target="_blank" title="Document">Document</a>';
         $string .= '<script src="/media/script/three.js" async></script>';
+        $string .= '<link href="/media/link/three.css" rel="stylesheet">';
 
         $extractor = Extractor::make($string);
 
@@ -491,17 +493,20 @@ class ExtractorTest extends TestCase
             return $tag->path();
         }, $extractor->extract(Anchor::class));
 
-
         $scripts = array_map(function (Tag $tag) {
             return $tag->path();
         }, $extractor->extract(Script::class));
 
+        $links = array_map(function (Tag $tag) {
+            return $tag->path();
+        }, $extractor->extract(Link::class));
 
         $this->assertEquals([
             '/media/image/one.jpg',
             'https://mysite.com/media/image/two.jpg',
             '/media/files/two.pdf',
             '/media/script/three.js',
-        ], array_merge($images, $anchors, $scripts));
+            '/media/link/three.css',
+        ], array_merge($images, $anchors, $scripts, $links));
     }
 }

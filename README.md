@@ -239,3 +239,43 @@ class Link extends Tag
     }
 }
 ```
+
+#### Example of extracting only paths
+
+```php
+$string = '<img src="/media/image/one.jpg" alt="Image one">';
+$string .= '<img src="https://mysite.com/media/image/two.jpg" alt="Image two">';
+$string .= '<a href="/media/files/two.pdf" '.
+    'target="_blank" title="Document">Document</a>';
+$string .= '<script src="/media/script/three.js" async></script>';
+$string .= '<link href="/media/link/three.css" rel="stylesheet">';
+
+$extractor = Extractor::make($string);
+
+
+$images = array_map(function (Tag $tag) {
+    return $tag->path();
+}, $extractor->extract(Image::class));
+
+$anchors = array_map(function (Tag $tag) {
+    return $tag->path();
+}, $extractor->extract(Anchor::class));
+
+
+$scripts = array_map(function (Tag $tag) {
+    return $tag->path();
+}, $extractor->extract(Script::class));
+
+$links = array_map(function (Tag $tag) {
+    return $tag->path();
+}, $extractor->extract(Link::class));
+
+
+$this->assertEquals([
+    '/media/image/one.jpg',
+    'https://mysite.com/media/image/two.jpg',
+    '/media/files/two.pdf',
+    '/media/script/three.js',
+    '/media/link/three.css',
+], array_merge($images, $anchors, $scripts, $links));
+```
