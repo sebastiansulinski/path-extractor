@@ -54,6 +54,6 @@ class Link extends Tag
      */
     public function tag(): string
     {
-        return '<link'.$this->tagAttributes('href', 'type', 'rel').'></link>';
+        return '<link'.$this->tagAttributes('href', 'type', 'rel').'>';
     }
 }
