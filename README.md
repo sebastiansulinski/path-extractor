@@ -158,6 +158,12 @@ Each implementation of `\SSD\PathExtractor\Tags\Tag` will have their own, unique
 - charset
 - async
 - defer
+
+\SSD\PathExtractor\Tags\Link
+
+- href
+- type
+- rel
 ```
 
 #### Rendering tag for `\SSD\PathExtractor\Tags\Tag` class instance.
