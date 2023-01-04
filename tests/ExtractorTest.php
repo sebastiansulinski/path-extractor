@@ -13,10 +13,11 @@ use SSD\PathExtractor\InvalidHtmlException;
 
 class ExtractorTest extends TestCase
 {
-    /**
-     * @test
-     */
-    public function extracts_image_paths()
+	/**
+	 * @test
+	 * @throws \SSD\PathExtractor\InvalidHtmlException
+	 */
+    public function extracts_image_paths(): void
     {
         $string = '<img src="/media/image/one.jpg" alt="Image one">';
         $string .= '<p>Some</p>';
@@ -24,7 +25,7 @@ class ExtractorTest extends TestCase
         $string .= '<img src="/media/image/three.svg" alt="Image three">';
 
         $extractor = new Extractor($string);
-        $extractor->extract(Image::class);
+
         $this->assertEquals(
             [
                 new Image([
@@ -65,7 +66,7 @@ class ExtractorTest extends TestCase
     /**
      * @test
      */
-    public function returns_image_tag()
+    public function returns_image_tag(): void
     {
         $string = '<img src="/media/image/one.jpg" alt="Image one">';
         $string .= '<p>Some</p>';
@@ -81,7 +82,7 @@ class ExtractorTest extends TestCase
     /**
      * @test
      */
-    public function extracts_script_paths()
+    public function extracts_script_paths(): void
     {
         $string = '<script src="/media/script/one.js"></script>';
         $string .= '<p>Some</p>';
@@ -119,7 +120,7 @@ class ExtractorTest extends TestCase
     /**
      * @test
      */
-    public function returns_script_tag()
+    public function returns_script_tag(): void
     {
         $string = '<script src="/media/script/one.js"></script>';
         $string .= '<p>Some</p>';
@@ -132,10 +133,11 @@ class ExtractorTest extends TestCase
         );
     }
 
-    /**
-     * @test
-     */
-    public function extracts_anchors()
+	/**
+	 * @test
+	 * @throws \SSD\PathExtractor\InvalidHtmlException
+	 */
+    public function extracts_anchors(): void
     {
         $string = '<a href="/media/files/one.pdf" target="_blank">Document one</a>';
         $string .= '<p>Some</p>';
@@ -216,7 +218,7 @@ class ExtractorTest extends TestCase
     /**
      * @test
      */
-    public function returns_anchor_tag()
+    public function returns_anchor_tag(): void
     {
         $string = '<a href="/media/files/one.pdf" '.
             'target="_blank" title="Document">Document</a>';
@@ -227,10 +229,11 @@ class ExtractorTest extends TestCase
         );
     }
 
-    /**
-     * @test
-     */
-    public function prepends_url_if_not_present()
+	/**
+	 * @test
+	 * @throws \SSD\PathExtractor\InvalidHtmlException
+	 */
+    public function prepends_url_if_not_present(): void
     {
         $string = '<img src="/media/image/one.jpg" alt="Image one">';
         $string .= '<img src="https://mysite.com/media/image/two.jpg" alt="Image two">';
@@ -288,7 +291,7 @@ class ExtractorTest extends TestCase
     /**
      * @test
      */
-    public function throws_exception_with_invalid_input_and_purify_set_to_false()
+    public function throws_exception_with_invalid_input_and_purify_set_to_false(): void
     {
         $string = '<body<img src="/media/image/one.jpg" alt="Image one">';
         $string .= '<img src="https://mysite.com/media/image/two.jpg" alt="Image two">';
@@ -301,7 +304,7 @@ class ExtractorTest extends TestCase
     /**
      * @test
      */
-    public function does_not_throw_exception_with_invalid_input_and_purify_set_to_true_but_omits_tags_nearby_unclosed_tags()
+    public function does_not_throw_exception_with_invalid_input_and_purify_set_to_true_but_omits_tags_nearby_unclosed_tags(): void
     {
         $string = '<body<img src="/media/image/one.jpg" alt="Image one">';
         $string .= '<img src="https://mysite.com/media/image/two.jpg" alt="Image two">';
@@ -319,10 +322,11 @@ class ExtractorTest extends TestCase
         );
     }
 
-    /**
-     * @test
-     */
-    public function does_not_throw_exception_with_invalid_input_and_purify_set_to_true_and_does_not_omit_tags_nearby_closed_tags()
+	/**
+	 * @test
+	 * @throws \SSD\PathExtractor\InvalidHtmlException
+	 */
+    public function does_not_throw_exception_with_invalid_input_and_purify_set_to_true_and_does_not_omit_tags_nearby_closed_tags(): void
     {
         $string = '<body><img src="/media/image/one.jpg" alt="Image one">';
         $string .= '<p><img src="https://mysite.com/media/image/two.jpg" alt="Image two">';
@@ -346,10 +350,11 @@ class ExtractorTest extends TestCase
         );
     }
 
-    /**
-     * @test
-     */
-    public function returns_empty_array_with_empty_body()
+	/**
+	 * @test
+	 * @throws \SSD\PathExtractor\InvalidHtmlException
+	 */
+    public function returns_empty_array_with_empty_body(): void
     {
         $this->assertEquals(
             [],
@@ -372,10 +377,11 @@ class ExtractorTest extends TestCase
         );
     }
 
-    /**
-     * @test
-     */
-    public function removes_records_with_empty_paths()
+	/**
+	 * @test
+	 * @throws \SSD\PathExtractor\InvalidHtmlException
+	 */
+    public function removes_records_with_empty_paths(): void
     {
         $string = '<img src="" alt="Image one">';
         $string .= '<p>Some</p>';
@@ -383,7 +389,9 @@ class ExtractorTest extends TestCase
         $string .= '<img src="" alt="Image three">';
 
         $extractor = new Extractor($string);
+
         $extractor->extract(Image::class);
+
         $this->assertEquals(
             [
                 new Image([
@@ -397,10 +405,11 @@ class ExtractorTest extends TestCase
         );
     }
 
-    /**
-     * @test
-     */
-    public function returns_array_representation_of_the_tag()
+	/**
+	 * @test
+	 * @throws \SSD\PathExtractor\InvalidHtmlException
+	 */
+    public function returns_array_representation_of_the_tag(): void
     {
         $string = '<img src="/media/image/one.jpg" alt="Image one">';
         $string .= '<img src="https://mysite.com/media/image/two.jpg" alt="Image two">';
@@ -470,10 +479,11 @@ class ExtractorTest extends TestCase
         );
     }
 
-    /**
-     * @test
-     */
-    public function extracting_paths_only()
+	/**
+	 * @test
+	 * @throws \SSD\PathExtractor\InvalidHtmlException
+	 */
+    public function extracting_paths_only(): void
     {
         $string = '<img src="/media/image/one.jpg" alt="Image one">';
         $string .= '<img src="https://mysite.com/media/image/two.jpg" alt="Image two">';

@@ -197,6 +197,7 @@ If you need more tag types i.e. `link` - simply add new class that extends `\SSD
 ```php
 
 use SSD\PathExtractor\Tags\Tag;
+use SSD\PathExtractor\Tags\Type;
 
 class Link extends Tag
 {
@@ -228,9 +229,9 @@ class Link extends Tag
     static public function availableAttributes(): array
     {
         return [
-            'href' => static::TYPE_STRING,
-            'type' => static::TYPE_STRING,
-            'rel' => static::TYPE_STRING,
+            'href' => Type::STRING,
+            'type' => Type::STRING,
+            'rel' => Type::STRING,
         ];
     }
 

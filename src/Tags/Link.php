@@ -15,8 +15,6 @@ class Link extends Tag
 {
     /**
      * Get tag name.
-     *
-     * @return string
      */
     static public function tagName(): string
     {
@@ -25,8 +23,6 @@ class Link extends Tag
 
     /**
      * Get path attribute.
-     *
-     * @return string
      */
     static public function pathAttribute(): string
     {
@@ -35,22 +31,18 @@ class Link extends Tag
 
     /**
      * Get available attributes.
-     *
-     * @return array
      */
     static public function availableAttributes(): array
     {
         return [
-            'href' => static::TYPE_STRING,
-            'type' => static::TYPE_STRING,
-            'rel' => static::TYPE_STRING,
+            'href' => Type::STRING,
+            'type' => Type::STRING,
+            'rel' => Type::STRING,
         ];
     }
 
     /**
      * Get formatted tag.
-     *
-     * @return string
      */
     public function tag(): string
     {

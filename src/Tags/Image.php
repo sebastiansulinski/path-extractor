@@ -16,8 +16,6 @@ class Image extends Tag
 {
     /**
      * Get tag name.
-     *
-     * @return string
      */
     static public function tagName(): string
     {
@@ -26,8 +24,6 @@ class Image extends Tag
 
     /**
      * Get path attribute.
-     *
-     * @return string
      */
     static public function pathAttribute(): string
     {
@@ -36,23 +32,19 @@ class Image extends Tag
 
     /**
      * Get available attributes.
-     *
-     * @return array
      */
     static public function availableAttributes(): array
     {
         return [
-            'src' => static::TYPE_STRING,
-            'alt' => static::TYPE_STRING,
-            'width' => static::TYPE_STRING,
-            'height' => static::TYPE_STRING,
+            'src' => Type::STRING,
+            'alt' => Type::STRING,
+            'width' => Type::STRING,
+            'height' => Type::STRING,
         ];
     }
 
     /**
      * Get formatted tag.
-     *
-     * @return string
      */
     public function tag(): string
     {

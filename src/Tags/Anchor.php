@@ -17,8 +17,6 @@ class Anchor extends Tag
 {
     /**
      * Get tag name.
-     *
-     * @return string
      */
     static public function tagName(): string
     {
@@ -27,8 +25,6 @@ class Anchor extends Tag
 
     /**
      * Get path attribute.
-     *
-     * @return string
      */
     static public function pathAttribute(): string
     {
@@ -37,24 +33,20 @@ class Anchor extends Tag
 
     /**
      * Get available attributes.
-     *
-     * @return array
      */
     static public function availableAttributes(): array
     {
         return [
-            'href' => static::TYPE_STRING,
-            'target' => static::TYPE_STRING,
-            'title' => static::TYPE_STRING,
-            'rel' => static::TYPE_STRING,
-            'nodeValue' => static::TYPE_PROPERTY,
+            'href' => Type::STRING,
+            'target' => Type::STRING,
+            'title' => Type::STRING,
+            'rel' => Type::STRING,
+            'nodeValue' => Type::PROPERTY,
         ];
     }
 
     /**
      * Get formatted tag.
-     *
-     * @return string
      */
     public function tag(): string
     {

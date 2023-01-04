@@ -17,8 +17,6 @@ class Script extends Tag
 {
     /**
      * Get tag name.
-     *
-     * @return string
      */
     static public function tagName(): string
     {
@@ -27,8 +25,6 @@ class Script extends Tag
 
     /**
      * Get path attribute.
-     *
-     * @return string
      */
     static public function pathAttribute(): string
     {
@@ -37,24 +33,20 @@ class Script extends Tag
 
     /**
      * Get available attributes.
-     *
-     * @return array
      */
     static public function availableAttributes(): array
     {
         return [
-            'src' => static::TYPE_STRING,
-            'type' => static::TYPE_STRING,
-            'charset' => static::TYPE_STRING,
-            'async' => static::TYPE_BOOLEAN,
-            'defer' => static::TYPE_BOOLEAN,
+            'src' => Type::STRING,
+            'type' => Type::STRING,
+            'charset' => Type::STRING,
+            'async' => Type::BOOLEAN,
+            'defer' => Type::BOOLEAN,
         ];
     }
 
     /**
      * Get formatted tag.
-     *
-     * @return string
      */
     public function tag(): string
     {

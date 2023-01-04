@@ -6,36 +6,10 @@ use InvalidArgumentException;
 
 abstract class Tag
 {
-    /**
-     * String type.
-     *
-     * @var string
-     */
-    const TYPE_STRING = 'string';
-
-    /**
-     * Boolean type.
-     *
-     * @var string
-     */
-    const TYPE_BOOLEAN = 'bool';
-
-    /**
-     * Property type.
-     *
-     * @var string
-     */
-    const TYPE_PROPERTY = 'property';
-
-    /**
-     * @var array
-     */
-    private $attributes = [];
+    private array $attributes;
 
     /**
      * Tag constructor.
-     *
-     * @param  array $attributes
      */
     public function __construct(array $attributes)
     {
@@ -44,36 +18,26 @@ abstract class Tag
 
     /**
      * Get tag name.
-     *
-     * @return string
      */
     abstract static public function tagName(): string;
 
     /**
      * Get path attribute.
-     *
-     * @return string
      */
     abstract static public function pathAttribute(): string;
 
     /**
      * Get available attributes.
-     *
-     * @return array
      */
     abstract static public function availableAttributes(): array;
 
     /**
      * Get formatted tag.
-     *
-     * @return string
      */
     abstract public function tag(): string;
 
     /**
      * Get path.
-     *
-     * @return string
      */
     public function path(): string
     {
@@ -82,11 +46,8 @@ abstract class Tag
 
     /**
      * Get tag attributes.
-     *
-     * @param  array|string $attributes
-     * @return string
      */
-    protected function tagAttributes($attributes): string
+    protected function tagAttributes(array|string $attributes): string
     {
         $attributes = is_array($attributes) ? $attributes : func_get_args();
 
@@ -107,13 +68,10 @@ abstract class Tag
 
     /**
      * Format attribute.
-     *
-     * @param  string $field
-     * @return string
      */
     private function formatAttribute(string $field): string
     {
-        if ($this->availableAttributes()[$field] === static::TYPE_BOOLEAN) {
+        if ($this->availableAttributes()[$field] === Type::BOOLEAN) {
             return $field;
         }
 
@@ -121,12 +79,9 @@ abstract class Tag
     }
 
     /**
-     * Get attribute.
-     *
-     * @param  string $name
-     * @return mixed
+     * Get attribute using magic method.
      */
-    public function __get(string $name)
+    public function __get(string $name): mixed
     {
         if (!isset($this->attributes[$name])) {
             throw new InvalidArgumentException('Invalid attribute for this tag type');
@@ -137,8 +92,6 @@ abstract class Tag
 
     /**
      * Get string representation of the object instance.
-     *
-     * @return string
      */
     public function __toString(): string
     {
@@ -147,8 +100,6 @@ abstract class Tag
 
     /**
      * Get array representation of the object instance.
-     *
-     * @return array
      */
     public function toArray(): array
     {
